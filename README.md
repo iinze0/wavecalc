@@ -4,6 +4,15 @@
 > No accounts. No tracking. Just open the HTML.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Live](https://img.shields.io/badge/Live-iinze0.github.io/wavecalc-22C55E?style=flat-square)](https://iinze0.github.io/wavecalc/)
+
+---
+
+## Live Demo
+
+**[https://iinze0.github.io/wavecalc/](https://iinze0.github.io/wavecalc/)**
+
+*(Enable GitHub Pages once if the link 404s: repo Settings → Pages → Deploy from branch → main / root)*
 
 ---
 
@@ -17,9 +26,9 @@ Quickly calculate quarter-wave, half-wave, and full-wave antenna lengths for any
 - Copy results
 - Works completely offline
 
-## Use it
+## Use it locally
 
-Open `index.html` in any browser, or host it on GitHub Pages.
+Open `index.html` in any browser.
 
 No build step. No dependencies.
 
