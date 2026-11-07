@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WaveCalc — Antenna Length Calculator</title>
+<style>
+  :root {
+    --bg: #0F0F0F;
+    --card: #1A1A1A;
+    --text: #F5F0E6;
+    --muted: #A8A29E;
+    --accent: #22C55E;
+    --border: #2A2A2A;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 2rem 1rem;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 2rem; }
+  h1 { font-size: 2.2rem; font-weight: 600; letter-spacing: -0.02em; }
+  .sub { color: var(--muted); margin-top: 0.5rem; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  label { display: block; font-size: 0.85rem; color: var(--muted); margin-bottom: 0.4rem; }
+  input, select {
+    width: 100%;
+    background: #111;
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.75rem 1rem;
+    border-radius: 10px;
+    font-size: 1rem;
+  }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+  .presets { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0; }
+  .preset {
+    background: #222;
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.4rem 0.8rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    cursor: pointer;
+  }
+  .preset:hover, .preset.active { border-color: var(--accent); color: var(--accent); }
+  .results { display: grid; gap: 0.75rem; }
+  .result {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.9rem 1rem;
+    background: #111;
+    border-radius: 10px;
+  }
+  .result strong { font-variant-numeric: tabular-nums; }
+  .bar {
+    height: 6px;
+    background: #333;
+    border-radius: 3px;
+    margin-top: 0.4rem;
+    overflow: hidden;
+  }
+  .bar-fill { height: 100%; background: var(--accent); border-radius: 3px; }
+  .copy {
+    background: none;
+    border: none;
+    color: var(--accent);
+    cursor: pointer;
+    font-size: 0.85rem;
+  }
+  footer { text-align: center; color: var(--muted); font-size: 0.8rem; margin-top: 2rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>WaveCalc</h1>
+    <p class="sub">Antenna length calculator for Sub-GHz, Wi-Fi, and RF work</p>
+  </header>
+
+  <div class="card">
+    <div class="row">
+      <div>
+        <label>Frequency (MHz)</label>
+        <input type="number" id="freq" value="433" step="0.1" min="1">
+      </div>
+      <div>
+        <label>Velocity Factor</label>
+        <input type="number" id="vf" value="0.95" step="0.01" min="0.5" max="1">
+      </div>
+    </div>
+
+    <div class="presets" id="presets">
+      <button class="preset" data-f="315">315 MHz</button>
+      <button class="preset active" data-f="433">433 MHz</button>
+      <button class="preset" data-f="868">868 MHz</button>
+      <button class="preset" data-f="915">915 MHz</button>
+      <button class="preset" data-f="2400">2.4 GHz</button>
+      <button class="preset" data-f="5000">5 GHz</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="results" id="results"></div>
+  </div>
+
+  <footer>Local-only · No tracking · MIT</footer>
+</div>
+
+<script>
+const freqInput = document.getElementById('freq');
+const vfInput = document.getElementById('vf');
+const results = document.getElementById('results');
+const presets = document.querySelectorAll('.preset');
+
+function calc() {
+  const f = parseFloat(freqInput.value) || 433;
+  const vf = parseFloat(vfInput.value) || 0.95;
+  const c = 299792458; // m/s
+  const wavelength = (c / (f * 1e6)) * vf;
+
+  const items = [
+    { name: 'Full wave', len: wavelength },
+    { name: 'Half wave', len: wavelength / 2 },
+    { name: 'Quarter wave', len: wavelength / 4 },
+    { name: '5/8 wave', len: wavelength * 0.625 }
+  ];
+
+  results.innerHTML = items.map(item => {
+    const mm = (item.len * 1000).toFixed(1);
+    const cm = (item.len * 100).toFixed(2);
+    const max = wavelength * 1000;
+    const pct = Math.min(100, (item.len * 1000 / max) * 100);
+    return `
+      <div class="result">
+        <div>
+          <div>${item.name}</div>
+          <div class="bar"><div class="bar-fill" style="width:${pct}%"></div></div>
+        </div>
+        <div style="text-align:right">
+          <strong>${mm} mm</strong><br>
+          <span style="color:var(--muted);font-size:0.85rem">${cm} cm</span>
+          <button class="copy" onclick="navigator.clipboard.writeText('${mm} mm')">Copy</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+freqInput.addEventListener('input', calc);
+vfInput.addEventListener('input', calc);
+
+presets.forEach(btn => {
+  btn.addEventListener('click', () => {
+    presets.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    freqInput.value = btn.dataset.f;
+    calc();
+  });
+});
+
+calc();
+</script>
+</body>
+</html>
